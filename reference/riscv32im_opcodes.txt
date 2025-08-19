@@ -1,0 +1,82 @@
+# RISC-V RV32IM Opcodes, funct3, and funct7 Reference
+
+## R-type (Register)
+| Instruction | Opcode   | funct3 | funct7  |
+|-------------|----------|--------|---------|
+| ADD         | 0110011  | 000    | 0000000 |
+| SUB         | 0110011  | 000    | 0100000 |
+| SLL         | 0110011  | 001    | 0000000 |
+| SLT         | 0110011  | 010    | 0000000 |
+| SLTU        | 0110011  | 011    | 0000000 |
+| XOR         | 0110011  | 100    | 0000000 |
+| SRL         | 0110011  | 101    | 0000000 |
+| SRA         | 0110011  | 101    | 0100000 |
+| OR          | 0110011  | 110    | 0000000 |
+| AND         | 0110011  | 111    | 0000000 |
+| MUL         | 0110011  | 000    | 0000001 |
+| MULH        | 0110011  | 001    | 0000001 |
+| MULHSU      | 0110011  | 010    | 0000001 |
+| MULHU       | 0110011  | 011    | 0000001 |
+| DIV         | 0110011  | 100    | 0000001 |
+| DIVU        | 0110011  | 101    | 0000001 |
+| REM         | 0110011  | 110    | 0000001 |
+| REMU        | 0110011  | 111    | 0000001 |
+
+## I-type (Immediate)
+| Instruction | Opcode   | funct3 |
+|-------------|----------|--------|
+| ADDI        | 0010011  | 000    |
+| SLTI        | 0010011  | 010    |
+| SLTIU       | 0010011  | 011    |
+| XORI        | 0010011  | 100    |
+| ORI         | 0010011  | 110    |
+| ANDI        | 0010011  | 111    |
+| SLLI        | 0010011  | 001    | funct7=0000000 |
+| SRLI        | 0010011  | 101    | funct7=0000000 |
+| SRAI        | 0010011  | 101    | funct7=0100000 |
+| LB          | 0000011  | 000    |
+| LH          | 0000011  | 001    |
+| LW          | 0000011  | 010    |
+| LBU         | 0000011  | 100    |
+| LHU         | 0000011  | 101    |
+| JALR        | 1100111  | 000    |
+
+## S-type (Store)
+| Instruction | Opcode   | funct3 |
+|-------------|----------|--------|
+| SB          | 0100011  | 000    |
+| SH          | 0100011  | 001    |
+| SW          | 0100011  | 010    |
+
+## B-type (Branch)
+| Instruction | Opcode   | funct3 |
+|-------------|----------|--------|
+| BEQ         | 1100011  | 000    |
+| BNE         | 1100011  | 001    |
+| BLT         | 1100011  | 100    |
+| BGE         | 1100011  | 101    |
+| BLTU        | 1100011  | 110    |
+| BGEU        | 1100011  | 111    |
+
+## U-type (Upper Immediate)
+| Instruction | Opcode   |
+|-------------|----------|
+| LUI         | 0110111  |
+| AUIPC       | 0010111  |
+
+## J-type (Jump)
+| Instruction | Opcode   |
+|-------------|----------|
+| JAL         | 1101111  |
+
+## System - NOT SUPPORTED AT THE TIME (TODO WARN)
+| Instruction | Opcode   | funct3 |
+|-------------|----------|--------|
+| FENCE       | 0001111  | 000    |
+| ECALL       | 1110011  | 000    |
+| EBREAK      | 1110011  | 000    |
+
+
+---
+This table covers all base RV32I and RV32M instructions with their opcodes, funct3, and funct7 (where applicable).
+NOTE: Fence is not supported
