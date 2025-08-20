@@ -1,7 +1,7 @@
-`include "static/alu_control.vh"
-`include "static/immediate_sources.vh"
-`include "static/opcodes.vh"
-`include "static/result_src.vh"
+`include "../src/static/alu_control.vh"
+`include "../src/static/immediate_sources.vh"
+`include "../src/static/opcodes.vh"
+`include "../src/static/result_src.vh"
 
 module control_unit (
     input wire [6:0] opcode,
@@ -9,6 +9,8 @@ module control_unit (
     input wire [6:0] funct7,
     output reg reg_write,
     output reg [1:0] result_src,
+    output wire [1:0] data_size,
+    output wire data_unsigned,
     output reg mem_write,
     output reg jump,
     output reg branch,
@@ -17,15 +19,18 @@ module control_unit (
     output reg [2:0] imm_src
 );
 
+    assign data_size = funct3[1:0]; // 00: byte, 01: half-word, 10: word
+    assign data_unsigned = funct3[2]; // byte or half-word unsigned
+
     always @* begin
         // By default don't enable any control signals
         reg_write   = 0;
         result_src  = `RESULT_SRC_UNDEFINED;
         mem_write   = 0;
         jump        = 0;
-        alu_src     = `ALU_SRC_B_UNDEFINED;
-        alu_control = `ALU_UNDEFINED;
         branch      = 0;
+        alu_control = `ALU_UNDEFINED;
+        alu_src     = `ALU_SRC_B_UNDEFINED;
         imm_src     = `IMM_UNDEFINED;
 
         casex (opcode)
@@ -115,7 +120,7 @@ module control_unit (
             `OPCODE_JAL: begin
                 jump        = 1;
                 reg_write   = 1;
-                result_src  = `RESULT_SRC_PC; // writes return address
+                result_src  = `RESULT_SRC_PC4; // writes return address
                 imm_src     = `IMM_J;
                 alu_src     = `ALU_SRC_B_IMMEDIATE;
                 alu_control = `ALU_ADD;
@@ -125,7 +130,7 @@ module control_unit (
             `OPCODE_JALR: begin
                 jump        = 1;
                 reg_write   = 1;
-                result_src  = `RESULT_SRC_PC; // writes return address
+                result_src  = `RESULT_SRC_PC4; // writes return address
                 imm_src     = `IMM_I;
                 alu_src     = `ALU_SRC_B_IMMEDIATE;
                 alu_control = `ALU_ADD;

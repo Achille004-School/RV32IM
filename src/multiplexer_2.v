@@ -1,4 +1,4 @@
-module multiplexer_2to1 (
+module multiplexer_2 (
     input wire [31:0] a,
     input wire [31:0] b,
     input wire sel,

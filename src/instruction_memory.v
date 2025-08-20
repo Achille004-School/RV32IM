@@ -2,7 +2,7 @@
 // Not a hardware-accurate model of multiplexed memory chips.
 module instruction_memory (
     input wire [31:0] address,
-    output reg [31:0] instruction
+    output wire [31:0] instruction
 );
 
     // 64 Ki-instructions
@@ -11,7 +11,7 @@ module instruction_memory (
 
     reg [31:0] memory [0:SIZE-1];
 
-    initial $readmemh("instructions.hex", memory);
+    initial $readmemh("instructions.mem", memory);
 
     assign instruction = memory[address[ADDRESS_BITS-1:0]];
 

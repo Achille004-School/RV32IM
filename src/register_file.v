@@ -1,12 +1,12 @@
 module register_file(
-    input wire [31:0] address_1,
-    input wire [31:0] address_2,
-    input wire [31:0] address_3,
+    input wire [4:0] address_1,
+    input wire [4:0] address_2,
+    input wire [4:0] address_3,
     input wire [31:0] write_data,
     input wire write_enable,
     input wire clk,
     output wire [31:0] read_data_1,
-    output wire [31:0] read_data_2,
+    output wire [31:0] read_data_2
 );
 
     reg [31:0] registers [0:31];
@@ -19,7 +19,7 @@ module register_file(
     assign read_data_2 = registers[address_2];
 
     always @(posedge clk) begin
-        if (write_enable and address_3 != 32'b0) registers[address_3] <= write_data;
+        if (write_enable && address_3 != 32'b0) registers[address_3] <= write_data;
     end
 
 endmodule

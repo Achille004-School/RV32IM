@@ -1,11 +1,11 @@
-`include "static/alu_control.vh"
+`include "../src/static/alu_control.vh"
 
 module alu(
     input wire [31:0] a,
     input wire [31:0] b,
     input wire [4:0] alu_control,
     output reg [31:0] result,
-    output reg zero
+    output wire zero
 );
 
     assign zero = (result == 32'b0);

@@ -1,9 +1,9 @@
-module register #(SIZE = 32) (
+module register #(parameter SIZE = 32) (
     input wire [SIZE-1:0] in,
     input wire clk,
     input wire en,
-    input wire clr
-    output reg [SIZE-1:0] out,
+    input wire clr,
+    output reg [SIZE-1:0] out
 );
 
     initial begin

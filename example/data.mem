@@ -1,0 +1,7 @@
+// Data memory initialization file
+// Generated from: example.s
+// Format: hexadecimal bytes
+// File size: 32 bytes
+
+EF BE AD DE BE BA FE CA 78 56 34 12 F0 DE BC 9A
+34 12 78 56 BC 9A F0 DE 12 34 56 78 9A BC DE F0
