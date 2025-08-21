@@ -20,7 +20,8 @@ module run_example;
         $dumpfile("run_example.vcd");
         $dumpvars(0, run_example);
 
-        $finish(1000); // Stop simulation after 1000 time units
+        #1200;
+        $finish; // Stop simulation after 1000 time units
     end
 
 endmodule

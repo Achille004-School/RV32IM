@@ -20,8 +20,15 @@ module alu(
             `ALU_SLL: result = a << b[4:0];
             `ALU_SRL: result = a >> b[4:0];
             `ALU_SRA: result = $signed(a) >>> b[4:0]; // >>> is signed right shift
+
             `ALU_SLT: result = (a < b) ? 1 : 0;
             `ALU_SLTU: result = ($unsigned(a) < $unsigned(b)) ? 1 : 0;
+            `ALU_SGE: result = (a >= b) ? 1 : 0;
+            `ALU_SGEU: result = ($unsigned(a) >= $unsigned(b)) ? 1 : 0;
+            `ALU_SNE: result = (a != b) ? 1 : 0;
+
+            `ALU_COPYB: result = b;
+
             `ALU_MUL: result = a * b;
             `ALU_MULH: result = (a * b) >> 32;
             `ALU_MULHSU: result = ($signed(a) * $unsigned(b)) >> 32;
@@ -30,6 +37,7 @@ module alu(
             `ALU_DIVU: result = $unsigned(a) / $unsigned(b);
             `ALU_REM: result = a % b;
             `ALU_REMU: result = $unsigned(a) % $unsigned(b);
+
             default: result = 32'bx; // Undefined operation
         endcase
     end

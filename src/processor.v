@@ -12,9 +12,9 @@
 
 module processor (
     input wire clk,
-    output reg [31:0] DEBUG_INSTRUCTION,
-    output reg [31:0] DEBUG_PC,
-    output reg [31:0] DEBUG_RESULT
+    output wire [31:0] DEBUG_INSTRUCTION,
+    output wire [31:0] DEBUG_PC,
+    output wire [31:0] DEBUG_RESULT
 );
 
     // FETCH
@@ -25,19 +25,20 @@ module processor (
     adder pc_plus_4_adder (pc_f, 32'h4, pc_plus_4_f);
 
     // DECODE
-    // Data signals
-    wire [31:0] instr_d, pc_d, pc_plus_4_d;
-    register #(32) instr_d_reg (instr_f, clk, ~stall_d, flush_d, instr_d);
-    register #(32) pc_d_reg (pc_f, clk, ~stall_d, flush_d, pc_d);
-    register #(32) pc_plus_4_d_reg (pc_plus_4_f, clk, ~stall_d, flush_d, pc_plus_4_d);
-
     // Control signals
     wire reg_write_d;
     wire [1:0] result_src_d, data_size_d;
     wire data_unsigned_d, mem_write_d, jump_d, branch_d;
     wire [4:0] alu_control_d;
-    wire alu_src_d;
+    wire alu_src_a_d, alu_src_b_d;
     wire [2:0] imm_src_d;
+    wire pc_target_base_src_d;
+
+    // Data signals
+    wire [31:0] instr_d, pc_d, pc_plus_4_d;
+    register #(32) instr_d_reg (instr_f, clk, ~stall_d, flush_d, instr_d);
+    register #(32) pc_d_reg (pc_f, clk, ~stall_d, flush_d, pc_d);
+    register #(32) pc_plus_4_d_reg (pc_plus_4_f, clk, ~stall_d, flush_d, pc_plus_4_d);
 
     wire [31:0] rd1_d, rd2_d;
     register_file REGISTER_FILE (instr_d[19:15], instr_d[24:20], rd_w, result_w, reg_write_w, ~clk, rd1_d, rd2_d);
@@ -63,8 +64,11 @@ module processor (
     register #(1) branch_e_reg (branch_d, clk, 1'b1, flush_e, branch_e);
     wire [4:0] alu_control_e;
     register #(5) alu_control_e_reg (alu_control_d, clk, 1'b1, flush_e, alu_control_e);
-    wire alu_src_e;
-    register #(1) alu_src_e_reg (alu_src_d, clk, 1'b1, flush_e, alu_src_e);
+    wire alu_src_a_e, alu_src_b_e;
+    register #(1) alu_src_a_e_reg (alu_src_a_d, clk, 1'b1, flush_e, alu_src_a_e);
+    register #(1) alu_src_b_e_reg (alu_src_b_d, clk, 1'b1, flush_e, alu_src_b_e);
+    wire pc_target_base_src_e;
+    register #(1) pc_target_src_e_reg (pc_target_base_src_d, clk, 1'b1, flush_e, pc_target_base_src_e);
 
     // Data signals
     wire [31:0] rd1_e, rd2_e, pc_e;
@@ -79,17 +83,22 @@ module processor (
     register #(32) imm_ext_e_reg (imm_ext_d, clk, 1'b1, flush_e, imm_ext_e);
     register #(32) pc_plus_4_e_reg (pc_plus_4_d, clk, 1'b1, flush_e, pc_plus_4_e);
 
-    wire [31:0] src_a_e, write_data_e, src_b_e;
-    multiplexer_3 src_a_e_mux (rd1_e, result_w, alu_result_m, foward_a_e, src_a_e);
-    multiplexer_3 src_b_e_mux (rd2_e, result_w, alu_result_m, foward_b_e, write_data_e);
-    multiplexer_2 src_b_e_mux_final (write_data_e, imm_ext_e, alu_src_e, src_b_e);
+    wire [31:0] fowarded_a, src_a_e; // NOT INCLUDED IN BASE SCHEMATIC -> ENABLES AUIPC SUPPORT
+    multiplexer_3 fowarded_a_mux (rd1_e, result_w, alu_result_m, foward_a_e, fowarded_a);
+    multiplexer_2 src_a_e_mux (fowarded_a, pc_e, alu_src_a_e, src_a_e);
+
+    wire [31:0] fowarded_b, src_b_e;
+    multiplexer_3 fowarded_b_mux (rd2_e, result_w, alu_result_m, foward_b_e, fowarded_b);
+    multiplexer_2 src_b_e_mux (fowarded_b, imm_ext_e, alu_src_b_e, src_b_e);
 
     wire [31:0] alu_result_e;
     wire zero_e;
     alu ALU(src_a_e, src_b_e, alu_control_e, alu_result_e, zero_e);
-
+    
+    wire [31:0] pc_target_base_e; // NOT INCLUDED IN BASE SCHEMATIC -> ENABLES JALR SUPPORT
+    multiplexer_2 pc_target_base_mux (rd1_e, pc_e, pc_target_base_src_e, pc_target_base_e);
     wire [31:0] pc_target_e;
-    adder pc_target_adder (pc_e, imm_ext_e, pc_target_e);
+    adder pc_target_adder (pc_target_base_e, imm_ext_e, pc_target_e);
 
     wire branch_taken_e, pc_src_e;
     and(branch_taken_e, branch_e, zero_e);
@@ -108,16 +117,16 @@ module processor (
     register #(1) mem_write_m_reg (mem_write_e, clk, 1'b1, 1'b0, mem_write_m);
 
     // Data signals
-    wire [31:0] alu_result_m, write_data_m;
+    wire [31:0] alu_result_m, src_reg_b_m;
     register #(32) alu_result_m_reg (alu_result_e, clk, 1'b1, 1'b0, alu_result_m);
-    register #(32) write_data_m_reg (write_data_e, clk, 1'b1, 1'b0, write_data_m);
+    register #(32) src_reg_b_m_reg (src_reg_b_e, clk, 1'b1, 1'b0, src_reg_b_m);
     wire [4:0] rd_m;
     register #(5) rd_m_reg (rd_e, clk, 1'b1, 1'b0, rd_m);
     wire [31:0] pc_plus_4_m;
     register #(32) pc_plus_4_m_reg (pc_plus_4_e, clk, 1'b1, 1'b0, pc_plus_4_m);
 
-    wire [31:0] read_data_m;
-    data_memory DATA_MEMORY (alu_result_m, write_data_m, data_size_m, data_unsigned_m, mem_write_m, clk, read_data_m);
+    wire [31:0] read_data_m; // MEMORY SIZE AND SIGN NOT INCLUDED IN BASE SCHEMATIC -> ENABLES ALL LOAD TYPES SUPPORT
+    data_memory DATA_MEMORY (alu_result_m, src_reg_b_m, data_size_m, data_unsigned_m, mem_write_m, clk, read_data_m);
 
     // WRITE BACK
     // Control signals
@@ -140,8 +149,8 @@ module processor (
 
     // CONTROL UNIT AND HAZARD UNIT
     control_unit CONTROL_UNIT (instr_d[6:0], instr_d[14:12], instr_d[31:25], 
-        reg_write_d, result_src_d, data_size_d, data_unsigned_d, mem_write_d,
-        jump_d, branch_d, alu_control_d, alu_src_d, imm_src_d
+        reg_write_d, result_src_d, data_size_d, data_unsigned_d, mem_write_d, jump_d,
+        branch_d, alu_control_d, alu_src_a_d, alu_src_b_d, imm_src_d, pc_target_base_src_d
     );
 
     wire stall_f, stall_d, flush_d, flush_e;
@@ -152,10 +161,8 @@ module processor (
     );
 
     // DEBUG OUTPUT
-    always @(posedge clk) begin
-        DEBUG_INSTRUCTION <= instr_d;
-        DEBUG_PC <= pc_d;
-        DEBUG_RESULT <= result_w;
-    end
+    assign DEBUG_PC = pc_f;
+    assign DEBUG_INSTRUCTION = instr_f;
+    assign DEBUG_RESULT = result_w;
 
 endmodule

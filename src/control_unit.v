@@ -15,8 +15,10 @@ module control_unit (
     output reg jump,
     output reg branch,
     output reg [4:0] alu_control,
-    output reg alu_src,
-    output reg [2:0] imm_src
+    output reg alu_src_a,
+    output reg alu_src_b,
+    output reg [2:0] imm_src,
+    output reg pc_target_base_src
 );
 
     assign data_size = funct3[1:0]; // 00: byte, 01: half-word, 10: word
@@ -30,15 +32,18 @@ module control_unit (
         jump        = 0;
         branch      = 0;
         alu_control = `ALU_UNDEFINED;
-        alu_src     = `ALU_SRC_B_UNDEFINED;
+        alu_src_a   = `ALU_SRC_UNDEFINED;
+        alu_src_b   = `ALU_SRC_UNDEFINED;
         imm_src     = `IMM_UNDEFINED;
+        pc_target_base_src = 1; // Default to old PC for jump calculations
 
         casex (opcode)
             // R-type arithmetic / logic (OP & OP with M extension)
             `OPCODE_OP: begin
                 reg_write  = 1;
                 result_src = `RESULT_SRC_ALU;
-                alu_src    = `ALU_SRC_B_MUX;
+                alu_src_a  = `ALU_SRC_A_REG;
+                alu_src_b  = `ALU_SRC_B_REG;
                 casex ({funct7,funct3})
                     {7'b0000000,3'b000}: alu_control = `ALU_ADD;
                     {7'b0100000,3'b000}: alu_control = `ALU_SUB;
@@ -69,7 +74,8 @@ module control_unit (
                 reg_write  = 1;
                 result_src = `RESULT_SRC_ALU;
                 imm_src    = `IMM_I;
-                alu_src    = `ALU_SRC_B_IMMEDIATE;
+                alu_src_a  = `ALU_SRC_A_REG;
+                alu_src_b  = `ALU_SRC_B_IMMEDIATE;
                 casex (funct3)
                     3'b000: alu_control = `ALU_ADD;
                     3'b010: alu_control = `ALU_SLT;
@@ -88,23 +94,26 @@ module control_unit (
                 reg_write   = 1; // write to register
                 result_src  = `RESULT_SRC_LOAD; 
                 imm_src     = `IMM_I;
-                alu_src     = `ALU_SRC_B_IMMEDIATE;
+                alu_src_a   =  `ALU_SRC_A_REG;
+                alu_src_b   = `ALU_SRC_B_IMMEDIATE;
                 alu_control = `ALU_ADD; // address calculation (rs1 content + immediate)
             end
 
             // Stores
             `OPCODE_STORE: begin
-                mem_write  = 1; // write to memory
-                imm_src    = `IMM_S;
-                alu_src    = `ALU_SRC_B_IMMEDIATE;
-                alu_control= `ALU_ADD; // address calculation (rs1 content + immediate)
+                mem_write   = 1; // write to memory
+                imm_src     = `IMM_S;
+                alu_src_a   = `ALU_SRC_A_REG;
+                alu_src_b   = `ALU_SRC_B_IMMEDIATE;
+                alu_control = `ALU_ADD; // address calculation (rs1 content + immediate)
             end
 
             // Branches
             `OPCODE_BRANCH: begin
                 branch     = 1;
                 imm_src    = `IMM_B;
-                alu_src    = `ALU_SRC_B_MUX;
+                alu_src_a  = `ALU_SRC_A_REG;
+                alu_src_b  = `ALU_SRC_B_REG;
                 casex (funct3)
                     3'b000: alu_control = `ALU_XOR;
                     3'b001: alu_control = `ALU_SNE;
@@ -122,8 +131,7 @@ module control_unit (
                 reg_write   = 1;
                 result_src  = `RESULT_SRC_PC4; // writes return address
                 imm_src     = `IMM_J;
-                alu_src     = `ALU_SRC_B_IMMEDIATE;
-                alu_control = `ALU_ADD;
+                pc_target_base_src = 1; // JAL uses PC + immediate for next instruction address
             end
 
             // JALR
@@ -132,8 +140,7 @@ module control_unit (
                 reg_write   = 1;
                 result_src  = `RESULT_SRC_PC4; // writes return address
                 imm_src     = `IMM_I;
-                alu_src     = `ALU_SRC_B_IMMEDIATE;
-                alu_control = `ALU_ADD;
+                pc_target_base_src = 0; // JALR uses rs1 + immediate for next instruction address
             end
 
             // LUI
@@ -141,7 +148,8 @@ module control_unit (
                 reg_write   = 1;
                 result_src  = `RESULT_SRC_ALU;
                 imm_src     = `IMM_U;
-                alu_src     = `ALU_SRC_B_IMMEDIATE;
+                // LUI just copies B, no need to specify src_a
+                alu_src_b   = `ALU_SRC_B_IMMEDIATE;
                 alu_control = `ALU_COPYB; // pass immediate (assuming ALU B input = imm)
             end
 
@@ -150,7 +158,8 @@ module control_unit (
                 reg_write  = 1;
                 result_src = `RESULT_SRC_ALU;
                 imm_src    = `IMM_U;
-                alu_src    = `ALU_SRC_B_IMMEDIATE;
+                alu_src_a  = `ALU_SRC_A_PC; // uses PC as first operand
+                alu_src_b  = `ALU_SRC_B_IMMEDIATE;
                 alu_control= `ALU_ADD;
             end
 

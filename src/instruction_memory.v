@@ -10,9 +10,10 @@ module instruction_memory (
     localparam ADDRESS_BITS = 16;
 
     reg [31:0] memory [0:SIZE-1];
+    wire [ADDRESS_BITS-1:0] CUR_ADDR = address[ADDRESS_BITS+1:2];
 
     initial $readmemh("instructions.mem", memory);
 
-    assign instruction = memory[address[ADDRESS_BITS-1:0]];
+    assign instruction = memory[CUR_ADDR];
 
 endmodule

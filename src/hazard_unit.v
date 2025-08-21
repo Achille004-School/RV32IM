@@ -11,13 +11,15 @@ module hazard_unit (
     input wire reg_write_w,
     input wire [4:0] rd_w,
 
-    output reg stall_f,
-    output reg stall_d,
-    output reg flush_d,
-    output reg flush_e,
+    output wire stall_f,
+    output wire stall_d,
+    output wire flush_d,
+    output wire flush_e,
     output reg [1:0] foward_a_e,
     output reg [1:0] foward_b_e
 );
+
+    wire load_dependency;
 
     ///// FOWARD HAZARD DETECTION /////
     // This detects if the instruction in the execute stage is trying to read from
@@ -56,16 +58,13 @@ module hazard_unit (
     ///// MEMORY HAZARD DETECTION /////
     // This detects if a stall and/or a flush is needed due to a memory hazard.
 
-    integer load_dependency;
-    always @(*) begin
-        // Stall pipeline when decode stage instruction depends on a load instruction in execute stage
-        // This prevents data hazards by ensuring the load completes before dependent instructions proceed
-        load_dependency = (result_src_e == 2'b01 && (rs1_d == rd_e || rs2_d == rd_e));
+    // Stall pipeline when decode stage instruction depends on a load instruction in execute stage
+    // This prevents data hazards by ensuring the load completes before dependent instructions proceed
+    assign load_dependency = (result_src_e === 2'b01 && rd_e !== 5'b0 && (rs1_d === rd_e || rs2_d === rd_e));
 
-        stall_f = load_dependency;
-        stall_d = load_dependency;
-        flush_d = pc_src_e; // Flush decode stage if we are branching
-        flush_e = load_dependency || pc_src_e; // Flush if we are branching or if we have a stall condition (will be reloaded)
-    end
+    assign stall_f = load_dependency;
+    assign stall_d = load_dependency;
+    assign flush_d = pc_src_e; // Flush decode stage if we are branching
+    assign flush_e = load_dependency | pc_src_e; // Flush if we are branching or if we have a stall condition (will be reloaded)
 
 endmodule

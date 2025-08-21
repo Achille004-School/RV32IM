@@ -39,8 +39,9 @@ def write_memory_file(binary_data: bytes, input_file: str) -> None:
             # Convert binary data to hexadecimal (4 bytes per line for instructions)
             for i in range(0, len(binary_data), 4):
                 chunk = binary_data[i:i + 4]
-                hex_bytes = [f"{byte:02X}" for byte in chunk]
-                hex_line = " ".join(hex_bytes)
+                # Reverse byte order for little-endian to big-endian conversion
+                hex_bytes = [f"{byte:02X}" for byte in reversed(chunk)]
+                hex_line = "".join(hex_bytes)
                 f.write(hex_line)
                 if i + 4 < len(binary_data):
                     f.write("\n")

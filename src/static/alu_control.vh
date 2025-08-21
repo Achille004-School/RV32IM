@@ -1,9 +1,11 @@
 `ifndef ALU_CONTROL_VH
 `define ALU_CONTROL_VH
 
-`define ALU_SRC_B_MUX 1'b0
+`define ALU_SRC_A_REG 1'b0
+`define ALU_SRC_A_PC 1'b1
+`define ALU_SRC_B_REG 1'b0
 `define ALU_SRC_B_IMMEDIATE 1'b1
-`define ALU_SRC_B_UNDEFINED 1'bx
+`define ALU_SRC_UNDEFINED 1'bx
 
 // I extension
 `define ALU_ADD        5'b00000
