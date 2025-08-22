@@ -1,4 +1,4 @@
-`include "../src/static/immediate_sources.vh"
+`include "src/static/immediate_sources.vh"
 
 module extend (
     input  		[24:0] imm,

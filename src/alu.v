@@ -1,4 +1,4 @@
-`include "../src/static/alu_control.vh"
+`include "src/static/alu_control.vh"
 
 module alu(
     input wire [31:0] a,

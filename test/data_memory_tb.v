@@ -1,5 +1,3 @@
-`include "../src/data_memory.v"
-
 `timescale 1ns / 1ps
 
 module data_memory_tb;

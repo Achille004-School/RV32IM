@@ -28,13 +28,15 @@ module data_memory (
             byte_count = 1 << $unsigned(data_size);
             for (i = 0; i < byte_count; i = i + 1)
                 memory[CUR_ADDR + i] = write_data[i*8 +: 8];
-            data_changed = 1;
         end
     end
 
-    always @(posedge ~clk) data_changed = 0;
+    // This will reflect the data written on the next clock edge in case there's a read to
+    // the same address with the same data size and sign. (edge case, but pretty clunky)
+    // This is a workaround for the fact that using memory in the sensitivity list makes the compiler hang.
+    wire data_written = (clk && write_enable);
 
-    always @(CUR_ADDR, data_size, data_unsigned, posedge data_changed) begin
+    always @(CUR_ADDR, data_size, data_unsigned, posedge data_written) begin
         if ($unsigned(data_size) != 3) begin
             read_data = 32'b0;
             byte_count = 1 << $unsigned(data_size);

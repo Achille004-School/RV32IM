@@ -1,7 +1,7 @@
-`include "../src/static/alu_control.vh"
-`include "../src/static/immediate_sources.vh"
-`include "../src/static/opcodes.vh"
-`include "../src/static/result_src.vh"
+`include "src/static/alu_control.vh"
+`include "src/static/immediate_sources.vh"
+`include "src/static/opcodes.vh"
+`include "src/static/result_src.vh"
 
 module control_unit (
     input wire [6:0] opcode,

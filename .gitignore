@@ -1,2 +1,6 @@
-*.vcd
+*.o
+*.elf
+*.bin
+*.mem
 *.out
+*.vcd

@@ -1,14 +1,14 @@
-`include "../src/adder.v"
-`include "../src/alu.v"
-`include "../src/control_unit.v"
-`include "../src/data_memory.v"
-`include "../src/extend.v"
-`include "../src/hazard_unit.v"
-`include "../src/instruction_memory.v"
-`include "../src/multiplexer_2.v"
-`include "../src/multiplexer_3.v"
-`include "../src/register_file.v"
-`include "../src/register.v"
+`include "src/adder.v"
+`include "src/alu.v"
+`include "src/control_unit.v"
+`include "src/data_memory.v"
+`include "src/extend.v"
+`include "src/hazard_unit.v"
+`include "src/instruction_memory.v"
+`include "src/multiplexer_2.v"
+`include "src/multiplexer_3.v"
+`include "src/register_file.v"
+`include "src/register.v"
 
 module processor (
     input wire clk,
@@ -117,16 +117,16 @@ module processor (
     register #(1) mem_write_m_reg (mem_write_e, clk, 1'b1, 1'b0, mem_write_m);
 
     // Data signals
-    wire [31:0] alu_result_m, src_reg_b_m;
+    wire [31:0] alu_result_m, mem_write_data;
     register #(32) alu_result_m_reg (alu_result_e, clk, 1'b1, 1'b0, alu_result_m);
-    register #(32) src_reg_b_m_reg (src_reg_b_e, clk, 1'b1, 1'b0, src_reg_b_m);
+    register #(32) mem_write_data_reg (fowarded_b, clk, 1'b1, 1'b0, mem_write_data);
     wire [4:0] rd_m;
     register #(5) rd_m_reg (rd_e, clk, 1'b1, 1'b0, rd_m);
     wire [31:0] pc_plus_4_m;
     register #(32) pc_plus_4_m_reg (pc_plus_4_e, clk, 1'b1, 1'b0, pc_plus_4_m);
 
     wire [31:0] read_data_m; // MEMORY SIZE AND SIGN NOT INCLUDED IN BASE SCHEMATIC -> ENABLES ALL LOAD TYPES SUPPORT
-    data_memory DATA_MEMORY (alu_result_m, src_reg_b_m, data_size_m, data_unsigned_m, mem_write_m, clk, read_data_m);
+    data_memory DATA_MEMORY (alu_result_m, mem_write_data, data_size_m, data_unsigned_m, mem_write_m, clk, read_data_m);
 
     // WRITE BACK
     // Control signals

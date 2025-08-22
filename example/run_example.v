@@ -1,5 +1,3 @@
-`include "../src/processor.v"
-
 `timescale 1ns / 1ps
 
 module run_example;
